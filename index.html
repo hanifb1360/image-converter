@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="Hanif Bahari">
+<meta name="description" content="Du kan konvertera dina PNG- och JPG-filer till WebP-filformat med den här appen, välj först filen, konvertera sedan och vänta i några sekunder och ladda sedan ner länken som appen tillhandahåller.">
+<title>Byn Image Converter</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    padding: 20px;
+}
+
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+input[type="file"] {
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+a {
+    display: block;
+    margin-top: 10px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Byn Image Converter</h2>
+    <input type="file" id="fileInput" accept=".jpg, .jpeg, .png">
+    <button id="convertBtn">Convert to WebP</button>
+    <a id="downloadLink" download="converted_image.webp" style="display: none;">Download Converted Image</a>
+</div>
+
+<script>
+document.getElementById('convertBtn').addEventListener('click', function() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                // Convert the canvas image to WebP format
+                const webpData = canvas.toDataURL('image/webp');
+
+                // Create a download link for the converted image
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = webpData;
+                downloadLink.style.display = 'block';
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+</body>
+</html>
