@@ -4,40 +4,90 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="Hanif Bahari">
-<meta name="description" content="Du kan konvertera dina PNG- och JPG-filer till WebP-filformat med den här appen, välj först filen, konvertera sedan och vänta i några sekunder och ladda sedan ner länken som appen tillhandahåller.">
+<meta name="description" content="Convert your PNG and JPG files to WebP format.">
 <title>Byn Image Converter</title>
 
 <style>
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    padding: 20px;
+    font-family: 'poppins', Tahoma, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
 }
 
 .container {
-    max-width: 400px;
-    margin: 0 auto;
+    max-width: 600px;
+    margin: 50px auto;
     background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    padding: 40px;
 }
 
-input[type="file"] {
-    margin-bottom: 10px;
+h1 {
+    font-size: 24px;
+    color: #333;
+    margin: 0 0 20px;
+}
+
+input[type="file"],
+input[type="range"] {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    background: #f1f1f1;
+    border-radius: 5px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #d08f28;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    border: none;
+    border-radius: 50%;
+    background: #4a6889;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover,
+input[type="range"]::-moz-range-thumb:hover {
+    background: #21374e;
 }
 
 button {
-    padding: 10px 20px;
-    background-color: #007bff;
+    display: block;
+    width: 50%;
+    padding: 10px;
+    background-color: #4a83c0;
     color: #fff;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
+    font-size: 16px;
     cursor: pointer;
+    margin-top: 40px;
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #183e66;
 }
 
 a {
@@ -50,44 +100,71 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+.file-size {
+    font-size: 14px;
+    color: #555;
+    margin-top: 10px;
+}
 </style>
 </head>
 <body>
 <div class="container">
-    <h2>Byn Image Converter</h2>
-    <input type="file" id="fileInput" accept=".jpg, .jpeg, .png">
+    <h1>Byn Image Converter</h1>
+    <input type="file" id="fileInput" accept=".jpg, .jpeg, .png, .gif, .bmp">
+    <label for="qualitySlider">Quality: <span id="qualityLabel">80%</span></label>
+    <input type="range" id="qualitySlider" min="1" max="100" value="80">
     <button id="convertBtn">Convert to WebP</button>
     <a id="downloadLink" download="converted_image.webp" style="display: none;">Download Converted Image</a>
+    <div id="fileSize" class="file-size"></div>
 </div>
 
 <script>
 document.getElementById('convertBtn').addEventListener('click', function() {
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
+    const qualitySlider = document.getElementById('qualitySlider');
+    const qualityLabel = document.getElementById('qualityLabel');
+    const qualityPercentage = parseInt(qualitySlider.value);
 
-    if (file) {
+    if (file && qualityPercentage >= 1 && qualityPercentage <= 100) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Set canvas dimensions
                 canvas.width = img.width;
                 canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                
-                // Convert the canvas image to WebP format
-                const webpData = canvas.toDataURL('image/webp');
 
-                // Create a download link for the converted image
-                const downloadLink = document.getElementById('downloadLink');
-                downloadLink.href = webpData;
-                downloadLink.style.display = 'block';
+                // Draw image onto canvas
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+
+                // Convert canvas to WebP with specified quality and file size
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.getElementById('downloadLink');
+                    a.href = url;
+                    a.download = 'converted_image.webp';
+                    a.style.display = 'block';
+                    const fileSizeDisplay = document.getElementById('fileSize');
+                    const fileSize = (blob.size / 1024).toFixed(2); // Convert to KB and round to 2 decimal places
+                    fileSizeDisplay.textContent = `File Size: ${fileSize} KB`;
+                }, 'image/webp', qualityPercentage / 100); // Convert quality percentage to a number between 0 and 1
             };
             img.src = e.target.result;
         };
         reader.readAsDataURL(file);
+    } else {
+        alert('Please select a file and enter a valid quality percentage between 1 and 100.');
     }
+});
+
+document.getElementById('qualitySlider').addEventListener('input', function() {
+    const qualityLabel = document.getElementById('qualityLabel');
+    qualityLabel.textContent = this.value + '%';
 });
 </script>
 </body>
