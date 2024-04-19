@@ -154,9 +154,16 @@ function handleFiles(files) {
                 canvas.toBlob(function(blob) {
                     const url = URL.createObjectURL(blob);
                     const a = document.getElementById('downloadLink');
+
+                    // Get the original file's name without extension
+                    const originalFileName = file.name.split('.').slice(0, -1).join('.');
+
+                    // Set the download link attributes
                     a.href = url;
-                    a.download = 'converted_image.webp';
+                    a.download = originalFileName + '.webp'; // Use the original file's name with .webp extension
                     a.style.display = 'block';
+
+                    // Display file size
                     const fileSizeDisplay = document.getElementById('fileSize');
                     const fileSize = (blob.size / 1024).toFixed(2); // Convert to KB and round to 2 decimal places
                     fileSizeDisplay.textContent = `File Size: ${fileSize} KB`;
@@ -172,6 +179,7 @@ function handleFiles(files) {
         alert('Please select a valid file and enter a valid quality percentage between 1 and 100.');
     }
 }
+
 
 document.getElementById('fileInput').addEventListener('change', function() {
     const files = this.files;
